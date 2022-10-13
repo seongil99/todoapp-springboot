@@ -1,15 +1,11 @@
 spring:
+  h2:
+    console:
+      enabled: true
+  profiles:
+    active: local
   datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://db-mysql:3306/mydb?useSSL=false
-    username: user
-    password: user
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        show-sql: true
-        format_sql: true
-      database: mysql
-      database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:userdb;DB_CLOSE_DELAY=-1
+    username: sa
+    password: 
