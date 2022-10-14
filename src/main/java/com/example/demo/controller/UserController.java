@@ -1,8 +1,10 @@
 package com.example.demo.controller;
 
+import antlr.Token;
 import com.example.demo.dto.ResponseDTO;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.model.UserEntity;
+import com.example.demo.security.TokenProvider;
 import com.example.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +21,9 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private TokenProvider tokenProvider;
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
         try {
@@ -31,7 +36,7 @@ public class UserController {
 
             // 서비스를 이용해 레포지토리에 저장
             UserEntity registeredUser = userService.create(user);
-            UserDTO responseUserDTO = userDTO.builder()
+            UserDTO responseUserDTO = UserDTO.builder()
                     .email(registeredUser.getEmail())
                     .id(registeredUser.getId())
                     .username(registeredUser.getUsername())
@@ -50,9 +55,11 @@ public class UserController {
         UserEntity user = userService.getByCredentials(userDTO.getEmail(), userDTO.getPassword());
 
         if(user != null) {
+            final String token = tokenProvider.create(user);
             final UserDTO responseUserDTO = UserDTO.builder()
                     .email(user.getEmail())
                     .id(user.getId())
+                    .token(token)
                     .build();
 
             return ResponseEntity.ok().body(responseUserDTO);
