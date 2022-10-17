@@ -8,7 +8,10 @@ import com.example.demo.security.TokenProvider;
 import com.example.demo.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +27,11 @@ public class UserController {
     @Autowired
     private TokenProvider tokenProvider;
 
+    @Bean
+    private PasswordEncoder getPasswordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserDTO userDTO) {
         try {
@@ -35,7 +43,7 @@ public class UserController {
                     .build();
 
             // 서비스를 이용해 레포지토리에 저장
-            UserEntity registeredUser = userService.create(user);
+            UserEntity registeredUser = userService.create(user, getPasswordEncoder());
             UserDTO responseUserDTO = UserDTO.builder()
                     .email(registeredUser.getEmail())
                     .id(registeredUser.getId())
@@ -52,7 +60,7 @@ public class UserController {
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticate(@RequestBody UserDTO userDTO) {
-        UserEntity user = userService.getByCredentials(userDTO.getEmail(), userDTO.getPassword());
+        UserEntity user = userService.getByCredentials(userDTO.getEmail(), userDTO.getPassword(), getPasswordEncoder());
 
         if(user != null) {
             final String token = tokenProvider.create(user);
